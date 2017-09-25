@@ -79,7 +79,7 @@ def program_initialization():
 
     return args 
 
-def run_batch_on_slurm(args, argv):
+def run_qc_on_grid(args, argv):
     input_directory = os.path.realpath(os.path.expanduser(args.input_directory))
     output_directory = os.path.realpath(os.path.expanduser(args.output_directory))
     run_name = args.run_name
@@ -263,12 +263,14 @@ def qc_sample(identifier_file, run_name, threads=4, memory=12, partition='', kee
         #Check contigs for contaminants
         step07 = serum.step__kraken_on_contigs([identifier+"_contigs.fasta"])
         to_remove.extend(step07.get_temp_files())
-        
+
+        #Analysis steps
         #Surveillance (species relative)
         step0A = serum.program__mlst(["spades_contigs.fasta"],mlst_species)
+        to_remove.extend(step0A.get_temp_files())
         #Run finders on reads
         step0B = serum.step__ariba_finders(read_files, threads)
-        to_remove.extend(step0A.get_temp_files())
+        to_remove.extend(step0B.get_temp_files())
         #Run additional scripts as described in DB
         step0C = serum.step__species_specific_analysis(detected_species)
 
@@ -324,7 +326,7 @@ def main(argv):
     elif args.clean_temp_files:
         clean_temp_files(args,argv)
     else:
-        run_batch_on_slurm(args, argv)
+        run_qc_on_grid(args, argv)
     return 0
 
 if __name__ == "__main__":   
