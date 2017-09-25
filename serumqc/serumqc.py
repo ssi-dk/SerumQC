@@ -176,11 +176,11 @@ def run_qc_on_grid(args, argv):
             run_command = job_command.format(**variables)
             job_id = serum.run_job(job_name = run_name+"__post_operations", job_command = run_command, task = "", working_dir = os.getcwd(), log_file = run_name+"_SerumQC.log", partition = priority, cpu_requirement = threads, memory_requirement_in_Gb = memory, time_requirement = "03:00:00", dependent_job_ids = jobs_queued, dependency = "afterany", group=group)
     return 0
+
 def pre_run_operations(email_to, run_name, email_read_directory, email_output_directory, send_email):
     if(send_email):
-        if email_read_directory.startswith("/srv") and email_output_directory.startswith("/srv"):
-            email_read_directory = email_read_directory.replace("/srv","\\\\s-sdi-calc1-p").replace("/","\\")
-            email_output_directory = email_output_directory.replace("/srv","\\\\s-sdi-calc1-p").replace("/","\\")
+        email_read_directory = serum.convert_path_from_linux_to_msft(email_read_directory)
+        email_output_directory = serum.convert_path_from_linux_to_msft(email_output_directory)
         serum.script__email_reads_available(email_to, run_name, email_read_directory, email_output_directory)
     return 0
 
@@ -188,9 +188,8 @@ def post_run_operations(email_to, run_name, email_read_directory, send_email):
     serum.script__convert_tsv_to_excel(run_name+"_summary.tsv",run_name+"_summary.xlsx")
     email_output_directory = os.path.realpath(run_name+"_summary.xlsx")
     if(send_email):
-        if email_read_directory.startswith("/srv") and email_output_directory.startswith("/srv"):
-            email_read_directory = email_read_directory.replace("/srv","\\\\s-sdi-calc1-p").replace("/","\\")
-            email_output_directory = email_output_directory.replace("/srv","\\\\s-sdi-calc1-p").replace("/","\\")
+        email_read_directory = serum.convert_path_from_linux_to_msft(email_read_directory)
+        email_output_directory = serum.convert_path_from_linux_to_msft(email_output_directory)
         serum.script__email_qc_complete(email_to, run_name, email_read_directory, email_output_directory)
     return 0
 

@@ -647,6 +647,13 @@ def step__species_specific_analysis(provided_species, category="ncbi_species"):
     else:
         fh.completed()
         return fh
+def convert_path_from_linux_to_msft(path):
+    if str(config.get("email","convert_paths_from_linux_to_msft"))=='True':
+        replacement_path = config.get("email","replacement_path").split(";")
+        path = path.replace(replacement_path[0],replacement_path[1]).replace("/","\\")
+        return path
+    else:
+        return path
 def script__email_reads_available(email_to, run_name, read_directory, output_directory):
     email_from = str(config.get("email","default_from"))
     email_subject = "SerumQC: {} reads available".format(run_name)
