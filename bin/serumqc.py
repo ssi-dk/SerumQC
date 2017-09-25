@@ -1,1 +1,1 @@
-../serum/serumqc.py
+../serumqc/serumqc.py
