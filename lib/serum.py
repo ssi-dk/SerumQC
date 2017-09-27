@@ -682,7 +682,7 @@ def script__email_reads_available(email_to, run_name, read_directory, output_dir
     s.send_message(msg)
     s.quit()
 
-def script__email_qc_complete(email_to, run_name, read_directory, qc_report_file, send_email):
+def script__email_qc_complete(email_to, run_name, read_directory, qc_report_file):
     email_from = str(config.get("email","default_from"))
     email_subject = "SerumQC: {} QC complete".format(run_name)
     email_template = (
