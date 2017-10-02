@@ -97,7 +97,7 @@ def run_qc_on_grid(args, argv):
     available_queues = config.get("categories","queues").split(",")
     email_default_to = config.get("email","default_to").split(";")
     send_email = args.send_email
-    email_list = args.email_list.split(";")
+    email_list = args.email_list.split(",")
 
 
     if not os.path.exists(output_directory):
@@ -123,7 +123,8 @@ def run_qc_on_grid(args, argv):
     if os.path.isfile(identifier_file):
         identifier_dataframe = serum.get_from_file__pandas_dataframe([identifier_file])
         jobs_queued = []
-        email_list.extend(email_default_to)
+        if len(email_list) == 0:
+            email_list.extend(email_default_to)
 
         for index, row in identifier_dataframe.iterrows():
             identifier = row['SampleID']

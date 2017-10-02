@@ -2044,19 +2044,22 @@ def script__qc_sample(input_files, output_files = ["qc.txt"]):
 
         #program__mlst
         mlst_file = ["mlst.txt"]
-        qc_dict["mlst_species"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s(?P<mlst_species>.+?)\s.+?\s.*")
-        qc_dict["mlst_type"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s.+?\s(?P<mlst_type>.+?)\s.*")
-        qc_dict["mlst_alleles"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s.+?\s.+?\s(?P<mlst_alleles>.*)")
+        if os.path.isfile(mlst_file[0]):
+            qc_dict["mlst_species"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s(?P<mlst_species>.+?)\s.+?\s.*")
+            qc_dict["mlst_type"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s.+?\s(?P<mlst_type>.+?)\s.*")
+            qc_dict["mlst_alleles"] = get_from_file__first_occurance_of_pattern(mlst_file,".*_contigs\.fasta\s.+?\s.+?\s(?P<mlst_alleles>.*)")
 
         #step__assembler QC
         spades_log_file = ["spades.log"]
-        qc_dict["read_insert_size"] = get_from_file__first_occurance_of_pattern(spades_log_file,"Insert size = (?P<insert_size>.*?), deviation = .*?,")
-        qc_dict["read_deviation"] = get_from_file__first_occurance_of_pattern(spades_log_file,"Insert size = .*?, deviation = (?P<deviation>.*?),")
+        if os.path.isfile(spades_log_file[0]):
+            qc_dict["read_insert_size"] = get_from_file__first_occurance_of_pattern(spades_log_file,"Insert size = (?P<insert_size>.*?), deviation = .*?,")
+            qc_dict["read_deviation"] = get_from_file__first_occurance_of_pattern(spades_log_file,"Insert size = .*?, deviation = (?P<deviation>.*?),")
 
         #step__contig_read_correction QC
         vcf_summary_file = ["pilon_vcf_summary.txt"]
-        qc_dict["failed_proportion_filter_count"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_ambiguous\t(?P<failed_proportion_filter_count>[0-9]+)")
-        qc_dict["called_snps"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_snp\t(?P<number_of_single_site_records_with_depth_and_snp>[0-9]+)")
+        if os.path.isfile(vcf_summary_file[0]):
+            qc_dict["failed_proportion_filter_count"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_ambiguous\t(?P<failed_proportion_filter_count>[0-9]+)")
+            qc_dict["called_snps"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_snp\t(?P<number_of_single_site_records_with_depth_and_snp>[0-9]+)")
 
         #QC actions and warnings
         qc_action = ""
@@ -2164,18 +2167,19 @@ def script__qc_sample(input_files, output_files = ["qc.txt"]):
         coverage_qa_file = ["coverage_qa.txt"]
         contigs_qa_file = ["contigs_qa.txt"]
         coverage_summary_file = ["coverage_summary.txt"]
-        qc_dict["coverage_base"] = coverage_base
-        qc_dict["coverage_compare"] = coverage_compare
-        qc_dict["bp_length_at_coverage_base"] = get_from_file__first_occurance_of_pattern(coverage_qa_file,"{}\t[0-9]+[\.]?[0-9]*\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_base))
-        qc_dict["bp_length_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(coverage_qa_file,"{}\t[0-9]+[\.]?[0-9]*\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_compare))
-        qc_dict["length_at_coverage_base"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_base))
-        qc_dict["length_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_compare))
-        qc_dict["contigs_at_coverage_base"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t[0-9]+\t(?P<contigs>[0-9]+)\n".format(coverage_base))
-        qc_dict["contigs_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t[0-9]+\t(?P<contigs>[0-9]+)\n".format(coverage_compare))
-        qc_dict["total_coverage"] = get_from_file__first_occurance_of_pattern(coverage_summary_file,"Total\t(?P<total_coverage>[0-9]+[\.]?[0-9]*)\t[0-9]*\t[0-9]*\n")
-        qc_dict["bp_length_difference"] = "NA"
-        qc_dict["length_difference"] = "NA"
-        qc_dict["contig_difference"] = "NA"
+        if(os.path.isfile(coverage_qa_file[0]) and os.path.isfile(contigs_qa_file[0]) and os.path.isfile(coverage_summary_file[0])):
+            qc_dict["coverage_base"] = coverage_base
+            qc_dict["coverage_compare"] = coverage_compare
+            qc_dict["bp_length_at_coverage_base"] = get_from_file__first_occurance_of_pattern(coverage_qa_file,"{}\t[0-9]+[\.]?[0-9]*\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_base))
+            qc_dict["bp_length_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(coverage_qa_file,"{}\t[0-9]+[\.]?[0-9]*\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_compare))
+            qc_dict["length_at_coverage_base"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_base))
+            qc_dict["length_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t(?P<length>[0-9]+)\t[0-9]+\n".format(coverage_compare))
+            qc_dict["contigs_at_coverage_base"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t[0-9]+\t(?P<contigs>[0-9]+)\n".format(coverage_base))
+            qc_dict["contigs_at_coverage_compare"] = get_from_file__first_occurance_of_pattern(contigs_qa_file,"{}\t[0-9]+\t(?P<contigs>[0-9]+)\n".format(coverage_compare))
+            qc_dict["total_coverage"] = get_from_file__first_occurance_of_pattern(coverage_summary_file,"Total\t(?P<total_coverage>[0-9]+[\.]?[0-9]*)\t[0-9]*\t[0-9]*\n")
+            qc_dict["bp_length_difference"] = "NA"
+            qc_dict["length_difference"] = "NA"
+            qc_dict["contig_difference"] = "NA"
         coverage_comparisons = [["bp_length_at_coverage_base", "bp_length_at_coverage_compare", "bp_length_difference", qc_db__min_length, qc_db__max_length, qc_db__length_difference, "testqc_bp_length_at_coverage_base", "testqc_bp_length_at_coverage_compare", "testqc_bp_length_difference"],
                                 ["length_at_coverage_base", "length_at_coverage_compare", "length_difference", qc_db__min_length, qc_db__max_length, qc_db__length_difference, "qc_length_at_coverage_base", "qc_length_at_coverage_compare", "qc_length_difference"],
                                 ["contigs_at_coverage_base", "contigs_at_coverage_compare", "contig_difference", 1, qc_db__max_contigs, qc_db__contig_difference, "qc_contigs_at_coverage_base", "qc_contigs_at_coverage_compare", "qc_contigs_difference"],]
