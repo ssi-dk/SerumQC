@@ -2027,18 +2027,20 @@ def script__qc_sample(input_files, output_files = ["qc.txt"]):
 
         #step__read_management QC
         read_lengths_file = ["read_length.txt"]
-        qc_dict["num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,"Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
-        qc_dict["mean_read_length"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*trimmed.*\n.*\n.*\n.*Both-\tReads: [0-9]+\t Mean: (?P<mean_read_length>[0-9]+[\.]?[0-9]*)\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
-        qc_dict["read_length"] = get_from_file__first_occurance_of_pattern(read_lengths_file,"Both-\tReads: [0-9]+\t Mean: [0-9]+[\.]?[0-9]*\t Mode: (?P<read_length>[0-9]+)\t Max: [0-9]+\t Min: [0-9]+")
-        qc_dict["trimmed_num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*trimmed.*\n.*\n.*\n.*Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
-        qc_dict["normalized_num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*normalized.*\n.*\n.*\n.*Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
+        if os.path.isfile(read_lengths_file[0]):
+            qc_dict["num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,"Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
+            qc_dict["mean_read_length"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*trimmed.*\n.*\n.*\n.*Both-\tReads: [0-9]+\t Mean: (?P<mean_read_length>[0-9]+[\.]?[0-9]*)\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
+            qc_dict["read_length"] = get_from_file__first_occurance_of_pattern(read_lengths_file,"Both-\tReads: [0-9]+\t Mean: [0-9]+[\.]?[0-9]*\t Mode: (?P<read_length>[0-9]+)\t Max: [0-9]+\t Min: [0-9]+")
+            qc_dict["trimmed_num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*trimmed.*\n.*\n.*\n.*Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
+            qc_dict["normalized_num_of_reads"] = get_from_file__first_occurance_of_pattern(read_lengths_file,".*normalized.*\n.*\n.*\n.*Both-\tReads: (?P<reads>[0-9]+)\t Mean: [0-9]+[\.]?[0-9]*\t Mode: [0-9]+\t Max: [0-9]+\t Min: [0-9]+")
 
         #step__kraken_on_reads QC
         kraken_summary_report_file = ["kraken_report_summary.txt"]
-        qc_dict["detected_species_ncbi"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Species detected: (?P<detected_species>.*?)\n")
-        qc_dict["genuses_detected"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Genuses found:(?P<genuses>.*?)\n")
-        qc_dict["number_of_genuses_detected"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Number of genuses in sample: (?P<number_of_genuses_detected>[0-9]+)\n")
-        qc_dict["percent_unclassified"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Percent unclassified: (?P<percent_unclassified>[0-9]+[\.]?[0-9]*)\n")
+        if os.path.isfile(kraken_summary_report_file[0]):
+            qc_dict["detected_species_ncbi"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Species detected: (?P<detected_species>.*?)\n")
+            qc_dict["genuses_detected"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Genuses found:(?P<genuses>.*?)\n")
+            qc_dict["number_of_genuses_detected"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Number of genuses in sample: (?P<number_of_genuses_detected>[0-9]+)\n")
+            qc_dict["percent_unclassified"] = get_from_file__first_occurance_of_pattern(kraken_summary_report_file,"Percent unclassified: (?P<percent_unclassified>[0-9]+[\.]?[0-9]*)\n")
 
         #program__mlst
         mlst_file = ["mlst.txt"]
