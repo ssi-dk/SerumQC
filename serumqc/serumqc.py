@@ -19,7 +19,6 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(_
 import serum
 config = configparser.RawConfigParser()
 config_path = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "lib", "serum.config"))
-#config_path = "/home/ssi.ad/kimn/git.repositories/ssi_scripts/serum/serum.config"
 assert os.path.isfile(config_path)
 config.read(config_path)
 
