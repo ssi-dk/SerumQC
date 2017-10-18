@@ -9,7 +9,7 @@ import argparse
 import tempfile
 import configparser
 import time
-import shutil #apparently has a nice remove script for directory trees
+import shutil
 import gzip
 import zipfile
 import inspect
@@ -106,7 +106,6 @@ def run_qc_on_grid(args, argv):
     serum.set_file_for_logger(run_name+"_SerumQC.log")
     serum.log_info("Current working directory: {}".format(os.getcwd()))
     serum.log_info("Run command: {}".format(" ".join(argv)))
-    serum.script__create_run_summary_file([run_name+"_summary.tsv"])
 
     if identifier_file == "":
         if os.path.isdir(sample_sheet_file):
@@ -118,6 +117,8 @@ def run_qc_on_grid(args, argv):
             sample_sheet_file = os.path.join(output_directory,"sample_sheet.xlsx")
             serum.script__create_identifier_file(input_directory, run_name=run_name, sample_sheet=sample_sheet_file, output_directory=output_directory)
             identifier_file = "identifier_list.txt"
+
+    serum.script__create_run_summary_file([identifier_file],[run_name+"_summary.tsv"])
 
     if os.path.isfile(identifier_file):
         identifier_dataframe = serum.get_from_file__pandas_dataframe([identifier_file])
@@ -296,7 +297,7 @@ def redo_qc_summary(args,argv):
     run_name = args.run_name
     output_directory = os.path.realpath(args.output_directory)
     redo_qc_summary = os.path.join(output_directory,run_name+"_summary_redo.tsv")
-    serum.script__create_run_summary_file([redo_qc_summary])
+    serum.script__create_run_summary_file([args.sample_sheet],[redo_qc_summary])
     for sample in os.listdir(output_directory):
         sample_directory = (os.path.join(output_directory,sample))
         if os.path.isdir(sample_directory):
@@ -313,6 +314,7 @@ def clean_temp_files(args,argv):
     potential_temp_files.extend(["spades"])
     potential_temp_files.extend(["spades_contigs.fasta.amb","spades_contigs.fasta.bwt","spades_contigs.fasta.sa","spades_contigs.fasta.ann","spades_contigs.fasta.pac","spades_contigs.sam","spades_contigs_elprep.sam","spades_contigs_elprep.bam","spades_contigs_elprep.bam.bai","spades_contigs.cov"])
     potential_temp_files.extend(["pilon.vcf"])
+    potential_temp_files.extend(["quast"])
     potential_temp_files.extend(["contigs_kraken.txt"])
 
     output_directory = os.path.realpath(args.output_directory)

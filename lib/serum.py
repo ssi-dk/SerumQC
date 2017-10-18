@@ -11,7 +11,7 @@ import argparse
 import tempfile
 import configparser
 import time
-import shutil #apparently has a nice remove script for directory trees
+import shutil
 import gzip
 import zipfile
 import time
@@ -58,8 +58,8 @@ def resolve_config_path(category, path):
 
 global GLOBAL_spades_program_path
 GLOBAL_spades_program_path = resolve_config_path("programs","spades_path")
-#global GLOBAL_quast_program_path
-#GLOBAL_quast_program_path = resolve_config_path("programs","quast_path")
+global GLOBAL_quast_program_path
+GLOBAL_quast_program_path = resolve_config_path("programs","quast_path")
 global GLOBAL_bbduk_program_path
 GLOBAL_bbduk_program_path = resolve_config_path("programs","bbduk_path")
 global GLOBAL_bbmerge_program_path
@@ -281,8 +281,8 @@ def check_all_programs():
     logger.info("config: {}".format(config_path))
     check_program(GLOBAL_spades_program_path)
     logger.info("spades: {}".format(obtain_program_path(GLOBAL_spades_program_path)))
-    # check_program(GLOBAL_quast_program_path)
-    # logger.info("QUAST: {}".format(obtain_program_path(GLOBAL_quast_program_path)))
+    check_program(GLOBAL_quast_program_path)
+    logger.info("QUAST: {}".format(obtain_program_path(GLOBAL_quast_program_path)))
     check_program(GLOBAL_bbduk_program_path)
     logger.info("BBDuk: {}".format(obtain_program_path(GLOBAL_bbduk_program_path)))
     check_program(GLOBAL_bbmerge_program_path)
@@ -522,7 +522,8 @@ def step__contig_read_correction(input_files, threads, memory, output_files = ["
         elprep_bam_file = input_files[1]
         program__pilon_with_vcf([contigs_file, elprep_bam_file], threads, memory)
         script__summarize_vcf(["pilon.vcf"])
-        fh.set_temp_files(["pilon.vcf"])
+        program__quast_for_report(["pilon.fasta"],threads)
+        fh.set_temp_files(["pilon.vcf","quast"])
 
     except Exception as e:
         fh.exception_handler(e)
@@ -636,6 +637,8 @@ def step__species_specific_analysis(provided_species, category="ncbi_species"):
         else:
             species_script = species_database.at[species_database_species_index[0],"additional_script"]
             if(len(species_script) > 0):
+                if "<serumqc>" in species_script:
+                    species_script = species_script.replace("<serumqc>",os.path.join(lib_path,"../")) 
                 logger.info("Will run script: {} for {}".format(species_script, provided_species))
                 fh.set_program_command(species_script)
                 fh.run_program()
@@ -1149,13 +1152,14 @@ def program__trimmomatic_read_trimming(input_files, threads, output_files = ["tr
         R2_trimmed_reads = temp_files[2]
         R2_trimmed_reads_unpaired = temp_files[3]
         trimmed_log = output_files[0]
+        adapter_file = str(config.get("files","read_adapters")).replace("<serum>",os.path.dirname(os.path.realpath(__file__))+"/..")
         trim_quality = int(config.get("values","trimmomatic_trimming__trim_quality"))
         window_size = int(config.get("values","trimmomatic_trimming__window_size"))
         minimum_length = int(config.get("values","trimmomatic_trimming__minimum_length"))
         threads = threads
 
         command_template = (
-            "{program_path} PE -threads {threads} {R1_reads} {R2_reads} {R1_trimmed_reads} {R1_trimmed_reads_unpaired} {R2_trimmed_reads} {R2_trimmed_reads_unpaired} LEADING:{trim_quality} TRAILING:{trim_quality} SLIDINGWINDOW:{window_size}:{trim_quality} MINLEN:{minimum_length}"
+            "{program_path} PE -threads {threads} {R1_reads} {R2_reads} {R1_trimmed_reads} {R1_trimmed_reads_unpaired} {R2_trimmed_reads} {R2_trimmed_reads_unpaired} ILLUMINACLIP:{adapter_file}:2:30:10 LEADING:{trim_quality} TRAILING:{trim_quality} SLIDINGWINDOW:{window_size}:{trim_quality} MINLEN:{minimum_length}"
             )
         context = {
             "program_path":program_path,
@@ -1166,6 +1170,7 @@ def program__trimmomatic_read_trimming(input_files, threads, output_files = ["tr
             "R1_trimmed_reads_unpaired":R1_trimmed_reads_unpaired,
             "R2_trimmed_reads":R2_trimmed_reads,
             "R2_trimmed_reads_unpaired":R2_trimmed_reads_unpaired,
+            "adapter_file":adapter_file,
             "trim_quality":trim_quality,
             "window_size":window_size,
             "minimum_length":minimum_length
@@ -1273,47 +1278,40 @@ def program__spades_assembler_only(input_files, threads, memory, output_files = 
         shutil.copy(os.path.join(spades_output_directory,"spades.log"),assembler_log)
         fh.completed()
         return fh
-# def program__quast(input_files, threads, output_files = ["quast_report.txt","quast.cov"]):
-#     fh = _function_helper(inspect.currentframe().f_code.co_name)
-#     fh.set_output_files(output_files)
-#     if(fh.start()==SUCCESS):
-#         fh.completed()
-#         return fh
+def program__quast_for_report(input_files, threads, output_files = ["quast_report.tsv"]):
+    fh = _function_helper(inspect.currentframe().f_code.co_name)
+    fh.set_output_files(output_files)
+    if(fh.start()==SUCCESS):
+        fh.completed()
+        return fh
 
-#     try:
-#         program_path = GLOBAL_quast_program_path
-#         contigs_file = input_files[0]
-#         reference_file = input_files[1]
-#         bam_file = input_files[2]
-#         quast_output_directory = "quast"
-#         quast_report = output_files[0]
-#         quast_coverage  = output_files[1]
-#         threads = threads
+    try:
+        program_path = GLOBAL_quast_program_path
+        contigs_file = input_files[0]
+        quast_output_directory = "quast"
+        quast_report = output_files[0]
+        threads = threads
 
-#         command_template = (
-#             "{program_path} -s --bam {bam_file} --fragmented -R {reference_file} -o {quast_output_directory} -t {threads} {contigs_file}"
-#             )
-#         context = {
-#             "program_path":program_path,
-#             "bam_file":bam_file,
-#             "reference_file":reference_file,
-#             "contigs_file":contigs_file,
-#             "quast_output_directory":quast_output_directory,
-#             "threads":threads
-#             }
+        command_template = (
+            "{program_path} --fast -o {quast_output_directory} -t {threads} {contigs_file}"
+            )
+        context = {
+            "program_path":program_path,
+            "contigs_file":contigs_file,
+            "quast_output_directory":quast_output_directory,
+            "threads":threads
+            }
 
-#         fh.set_program_command(command_template.format(**context))
-#         fh.run_program()
+        fh.set_program_command(command_template.format(**context))
+        fh.run_program()
 
-#     except Exception as e:
-#         fh.exception_handler(e)
-#         raise
-#     else:
-#         shutil.copy(os.path.join(quast_output_directory,"report.txt"),quast_report)
-#         directory, filename = os.path.split(reference_file)
-#         shutil.copy(os.path.join(quast_output_directory,"structural_variations/{}".format(filename.replace(".fasta",".cov"))),quast_coverage)
-#         fh.completed()
-#         return fh
+    except Exception as e:
+        fh.exception_handler(e)
+        raise
+    else:
+        shutil.copy(os.path.join(quast_output_directory,"report.tsv"),quast_report)
+        fh.completed()
+        return fh
 def program__nucmer(input_files):
     """
     TODO: code for function
@@ -1958,7 +1956,7 @@ def script__append_run_summary_file(input_files, output_files = ["run_summary_fi
     else:
         fh.completed()
         return fh
-def script__create_run_summary_file(output_files = ["run_summary_file.txt"]):
+def script__create_run_summary_file(input_files, output_files = ["run_summary_file.txt"]):
     fh = _function_helper(inspect.currentframe().f_code.co_name)
     fh.set_output_files(output_files)
     if(fh.start()==SUCCESS):
@@ -1966,7 +1964,9 @@ def script__create_run_summary_file(output_files = ["run_summary_file.txt"]):
         return fh
 
     try:
+        identifier_file = input_files[0]
         run_summary_file = output_files[0]
+
         header = ""
         qc_categories = config.get("categories","qc").split(",")
         for item in qc_categories:
@@ -1982,6 +1982,30 @@ def script__create_run_summary_file(output_files = ["run_summary_file.txt"]):
     else:
         fh.completed()
         return fh
+
+# def script__initialize_sample_on_run_summary_file(sample, run_summary_file, status):
+#     fh = _function_helper(inspect.currentframe().f_code.co_name)
+#     fh.start()
+
+#     try:
+#         identifier_file = get_from_file__pandas_dataframe(run_summary_file)
+#         run_summary_file = output_files[0]
+#         header = ""
+#         qc_categories = config.get("categories","qc").split(",")
+#         for item in qc_categories:
+#             header = header+item+"\t"
+#         header = header.strip()+"\n"
+
+#         with open(run_summary_file,"w") as output_file:
+#             output_file.write(header)
+
+#     except Exception as e:
+#         fh.exception_handler(e)
+#         raise
+#     else:
+#         fh.completed()
+#         return fh
+
 def script__qc_sample(input_files, output_files = ["qc.txt"]):
     fh = _function_helper(inspect.currentframe().f_code.co_name)
     fh.set_output_files(output_files)
@@ -2060,6 +2084,11 @@ def script__qc_sample(input_files, output_files = ["qc.txt"]):
         if os.path.isfile(vcf_summary_file[0]):
             qc_dict["failed_proportion_filter_count"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_ambiguous\t(?P<failed_proportion_filter_count>[0-9]+)")
             qc_dict["called_snps"] = get_from_file__first_occurance_of_pattern(vcf_summary_file,"number_of_single_site_records_with_depth_and_snp\t(?P<number_of_single_site_records_with_depth_and_snp>[0-9]+)")
+
+        quast_report_file = ["quast_report.tsv"]
+        if os.path.isfile(quast_report_file[0]):
+            qc_dict["N50"] = get_from_file__first_occurance_of_pattern(quast_report_file,"N50\t(?P<N50>[0-9]+)")
+            qc_dict["N75"] = get_from_file__first_occurance_of_pattern(quast_report_file,"N75\t(?P<N75>[0-9]+)")
 
         #QC actions and warnings
         qc_action = ""

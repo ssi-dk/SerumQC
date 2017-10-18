@@ -12,7 +12,7 @@ Cronobacter	cronobacter	Cronobacter	4200000	4600000												gonna need to def
 E. aerogenes		Enterobacter aerogenes	5000000	5500000												
 E. cloacae	ecloacae	Enterobacter cloacae	4700000	5600000												
 E. coli	ecoli	Escherichia coli	4500000	5800000												
-E. faecalis	efaecalis	Enterococcus faecalis	2200000	2700000									300000			
+E. faecalis	efaecalis	Enterococcus faecalis	2400000	3700000									300000			
 E. falsenii		Empedobacter falsenii	3550000	4150000												
 E. faecium	efaecium	Enterococcus faecium	2500000	3200000												
 E. gallinarum		Enterococcus gallinarum	2500000	3000000												
@@ -24,7 +24,7 @@ K. pneumoniae	kpneumoniae	Klebsiella pneumoniae	5100000	6150000
 L. pnemonia		Legionella pnemonia	3200000	3700000												
 L. pneumophila		Legionella pneumophila	3000000	3500000												
 Listeria	lmonocytogenes	Listeria monocytogenes	2800000	3100000												
-Meningococcus	neisseria	Neisseria meningitidis	2050000	2400000												
+Meningococcus	neisseria	Neisseria meningitidis	1900000	2300000											<serumqc>/serumqc/Meningococcus.py	
 N. gonorrheae	neisseria	Neisseria gonorrhoeae	1800000	2300000												
 P. aeruginosa	paeruginosa	Pseudomonas aeruginosa	6200000	7500000												
 P. putida		Pseudomonas putida	5700000	6600000												
